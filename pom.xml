@@ -155,15 +155,15 @@
                             <goal>launch4j</goal>
                         </goals>
                         <configuration>
-                            <headerType>gui</headerType>
+                            <headerType>console</headerType>
                             <outfile>${project.build.directory}/${project.name}.exe</outfile>
                             <jar>${project.build.directory}/${project.build.finalName}.jar</jar>
                             <errTitle>${project.name}</errTitle>
-                            <downloadUrl>https://java.com/pl/download/</downloadUrl>
+                            <downloadUrl>https://www.java.com/en/download/</downloadUrl>
+                            <chdir>.</chdir>
                             <icon>src/main/resources/${project.name}.ico</icon>
                             <classPath>
                                 <mainClass>${mainClass}</mainClass>
-                                <addDependencies>false</addDependencies>
                             </classPath>
                             <jre>
                                 <minVersion>1.8.0</minVersion>
