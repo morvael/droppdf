@@ -20,35 +20,38 @@ package pl.derwinski.droppdf.json;
  *
  * @author Dominik Derwiński
  */
-public class Weapon {
+public class Ship {
 
+    public String _id;
+    public String _rev;
     public String Name;
-    public int Energy;
-    public int Shots;
-    public int Accuracy;
-    public String RangeFull;
-    public String RangeCountered;
-    public String MoveFire;
-    public String Arc;
-    public boolean Optional;
-    public int OptionalCost;
+    public String Faction;
+    public String Designation;
+    public String Scan;
+    public String Signal;
+    public String Thrust;
+    public String Hull;
+    public String Armour;
+    public String PointDefence;
+    public int GroupMin;
+    public int GroupMax;
+    public String Tonnage;
+    public int TonnageClass;
+    public int Points;
+    public int HardPoints;
     public String[] Special;
-    public String FullString;
+    public ShipWeapon[] Weapons;
+    public LaunchAsset[] LaunchAssets;
+    public String[] SpecRules;
+    public int MinHardPoints;
+    public int MaxBroadSides;
+    public String[] icons;
 
-    public String getShots() {
-        return String.format("%d", Shots);
-    }
-
-    public String getAccuracy() {
-        if (Accuracy > 0) {
-            return String.format("%d+", Accuracy);
+    public String getGroup() {
+        if (GroupMax > GroupMin) {
+            return String.format("%d-%d", GroupMin, GroupMax);
         } else {
-            return "-";
+            return String.format("%d", GroupMin);
         }
     }
-
-    public String getEnergy() {
-        return String.format("%d", Energy);
-    }
-
 }

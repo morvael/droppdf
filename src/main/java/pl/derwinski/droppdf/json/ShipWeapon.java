@@ -14,29 +14,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.derwinski.pdf;
-
-import com.lowagie.text.Rectangle;
+package pl.derwinski.droppdf.json;
 
 /**
  *
  * @author Dominik Derwiński
  */
-public enum Border {
+public class ShipWeapon {
 
-    NO_BORDER(Rectangle.NO_BORDER),
-    BOX(Rectangle.BOX),
-    BOTTOM(Rectangle.BOTTOM),
-    TOP(Rectangle.TOP);
-
-    private final int border;
-
-    private Border(int border) {
-        this.border = border;
-    }
-
-    public int getBorder() {
-        return border;
-    }
-
+    public String Name;
+    public String LockValue;
+    public String Attack;
+    public String Damage;
+    public String Arc;
+    public String[] Special;
+    public String FullString;
 }

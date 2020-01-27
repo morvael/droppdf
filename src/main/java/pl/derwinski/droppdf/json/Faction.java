@@ -30,18 +30,4 @@ public class Faction {
     public String FleetGamePlay;
     public String Imageurl;
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Faction{_id=").append(_id);
-        sb.append(", _rev=").append(_rev);
-        sb.append(", Name=").append(Name);
-        sb.append(", Lore=").append(Lore);
-        sb.append(", GamePlay=").append(GamePlay);
-        sb.append(", FleetGamePlay=").append(FleetGamePlay);
-        sb.append(", Imageurl=").append(Imageurl);
-        sb.append('}');
-        return sb.toString();
-    }
-
 }

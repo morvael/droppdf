@@ -28,7 +28,10 @@ public enum Resource {
     FACTIONS("https://thetrolltrader.com:3001/factions/"),
     UNITS("https://thetrolltrader.com:3001/units/%s"),
     UNIT_PHOTOS("https://www.dropzonecommander.com/builder/assets/images/unitphotos/%s/%s.jpg"),
-    TRANSPORT_ICONS("https://www.dropzonecommander.com/builder/assets/images/transporticons/%s");
+    TRANSPORT_ICONS("https://www.dropzonecommander.com/builder/assets/images/transporticons/%s"),
+    SHIPS("https://thetrolltrader.com:3001/ships/%s"),
+    SHIP_PHOTOS("https://dropfleetcommander.com/assets/images/shipphotos/%s/%s.png"),
+    SHIP_ICONS("https://dropfleetcommander.com/assets/images/ShipIcons/%s.png");
 
     private final String url;
 

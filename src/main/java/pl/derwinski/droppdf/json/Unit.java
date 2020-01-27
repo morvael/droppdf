@@ -16,8 +16,6 @@
  */
 package pl.derwinski.droppdf.json;
 
-import java.util.Arrays;
-
 /**
  *
  * @author Dominik Derwiński
@@ -46,53 +44,11 @@ public class Unit {
     public boolean AlternateMove;
     public BehemothStats BehemothStats;
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Unit{_id=").append(_id);
-        sb.append(", _rev=").append(_rev);
-        sb.append(", Id=").append(Id);
-        sb.append(", Name=").append(Name);
-        sb.append(", Armour=").append(Armour);
-        sb.append(", Move=").append(Move);
-        sb.append(", CounterMeasures=").append(Arrays.toString(CounterMeasures));
-        sb.append(", DamagePoints=").append(DamagePoints);
-        sb.append(", Points=").append(Points);
-        sb.append(", Type=").append(Type);
-        sb.append(", Category=").append(Category);
-        sb.append(", TransportOptions=").append(Arrays.toString(TransportOptions));
-        sb.append(", ExtraRules=").append(Arrays.toString(ExtraRules));
-        sb.append(", Special=").append(Arrays.toString(Special));
-        sb.append(", Weapons=").append(Arrays.toString(Weapons));
-        sb.append(", Faction=").append(Faction);
-        sb.append(", MinSquadSize=").append(MinSquadSize);
-        sb.append(", MaxSquadSize=").append(MaxSquadSize);
-        sb.append(", Move2=").append(Move2);
-        sb.append(", AlternateMove=").append(AlternateMove);
-        sb.append(", BehemothStats=").append(BehemothStats);
-        sb.append('}');
-        return sb.toString();
-    }
-
     public String getMove() {
         if (Move2 > 0) {
             return String.format("%d\"-%d\"", Move, Move2);
         } else {
             return String.format("%d\"", Move);
-        }
-    }
-
-    public String getCounterMeasures() {
-        if (CounterMeasures == null || CounterMeasures.length == 0) {
-            return "-";
-        } else {
-            StringBuilder sb = new StringBuilder();
-            for (String cm : CounterMeasures) {
-                sb.append(cm);
-                sb.append(",");
-            }
-            sb.setLength(sb.length() - 1);
-            return sb.toString();
         }
     }
 
@@ -102,20 +58,6 @@ public class Unit {
 
     public String getDamagePoints() {
         return String.format("%d", DamagePoints);
-    }
-
-    public String getSpecial() {
-        if (Special == null || Special.length == 0) {
-            return "";
-        } else {
-            StringBuilder sb = new StringBuilder();
-            for (String sp : Special) {
-                sb.append(sp);
-                sb.append(", ");
-            }
-            sb.setLength(sb.length() - 2);
-            return sb.toString();
-        }
     }
 
     public String getSquadSize() {

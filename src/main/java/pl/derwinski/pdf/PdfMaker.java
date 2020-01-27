@@ -104,35 +104,35 @@ public class PdfMaker implements AutoCloseable {
         }
     }
 
-    float getPageWidth() {
+    public float getPageWidth() {
         return pageWidth;
     }
 
-    float getPageHeight() {
+    public float getPageHeight() {
         return pageHeight;
     }
 
-    float getLeftMargin() {
+    public float getLeftMargin() {
         return document.leftMargin();
     }
 
-    float getRightMargin() {
+    public float getRightMargin() {
         return document.rightMargin();
     }
 
-    float getTopMargin() {
+    public float getTopMargin() {
         return document.topMargin();
     }
 
-    float getBottomMargin() {
+    public float getBottomMargin() {
         return document.bottomMargin();
     }
 
-    float getContentWidth() {
+    public float getContentWidth() {
         return pageWidth - document.leftMargin() - document.rightMargin();
     }
 
-    float getContentHeight() {
+    public float getContentHeight() {
         return pageHeight - document.topMargin() - document.bottomMargin();
     }
 

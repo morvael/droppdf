@@ -32,20 +32,4 @@ public class BehemothStats {
     public int WeaponsDamagePoints;
     public String WeaponsEffect;
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("BehemothStats{HullPoints=").append(HullPoints);
-        sb.append(", HullDamagePoints=").append(HullDamagePoints);
-        sb.append(", HullEffect=").append(HullEffect);
-        sb.append(", LegsPoints=").append(LegsPoints);
-        sb.append(", LegsDamagePoints=").append(LegsDamagePoints);
-        sb.append(", LegsEffect=").append(LegsEffect);
-        sb.append(", WeaponsPoints=").append(WeaponsPoints);
-        sb.append(", WeaponsDamagePoints=").append(WeaponsDamagePoints);
-        sb.append(", WeaponsEffect=").append(WeaponsEffect);
-        sb.append('}');
-        return sb.toString();
-    }
-
 }

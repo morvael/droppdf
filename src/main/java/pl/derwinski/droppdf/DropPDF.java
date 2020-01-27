@@ -24,11 +24,14 @@ import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
-import pl.derwinski.droppdf.json.Faction;
-import pl.derwinski.droppdf.json.Unit;
-import pl.derwinski.droppdf.json.Weapon;
 import pl.derwinski.download.DownloadMode;
 import pl.derwinski.download.Downloader;
+import pl.derwinski.droppdf.json.Faction;
+import pl.derwinski.droppdf.json.LaunchAsset;
+import pl.derwinski.droppdf.json.Ship;
+import pl.derwinski.droppdf.json.ShipWeapon;
+import pl.derwinski.droppdf.json.Unit;
+import pl.derwinski.droppdf.json.Weapon;
 import pl.derwinski.pdf.BlockBuilder;
 import pl.derwinski.pdf.Border;
 import pl.derwinski.pdf.CellBuilder;
@@ -59,6 +62,9 @@ public class DropPDF {
     private Font gamePlayFont;
     private Font revFont;
     private Font categoryFont;
+    private Font shipNameFont;
+    private Font shipDesignationFont;
+    private Font shipPtsFont;
     private Font unitNameFont;
     private Font unitLabelFont;
     private Font unitFont;
@@ -82,6 +88,12 @@ public class DropPDF {
             try (PdfMaker pdf = new PdfMaker(downloader.getFile("DZC_%s_Letter.pdf", f.Name), PageSize.LETTER)) {
                 writeDZC(pdf, f);
             }
+            try (PdfMaker pdf = new PdfMaker(downloader.getFile("DFC_%s_A4.pdf", f.Name), PageSize.A4)) {
+                writeDFC(pdf, f);
+            }
+            try (PdfMaker pdf = new PdfMaker(downloader.getFile("DFC_%s_Letter.pdf", f.Name), PageSize.LETTER)) {
+                writeDFC(pdf, f);
+            }
         }
     }
 
@@ -96,7 +108,7 @@ public class DropPDF {
         revFont = pdf.getFont(lsr, 8, Color.BLACK);
         categoryFont = pdf.getFont(ss, 14, fd.getTextColor());
         unitNameFont = pdf.getFont(ss, 9, fd.getTextColor());
-        unitLabelFont = pdf.getFont(ss, 8, fd.getTextColor());
+        unitLabelFont = pdf.getFont(ss, 8, Color.WHITE);
         unitFont = pdf.getFont(ss, 8, Color.BLACK);
         transportFont = pdf.getFont(ss, 10, Color.BLACK);
         squadSizeFont = pdf.getFont(ss, 14, Color.BLACK);
@@ -144,7 +156,7 @@ public class DropPDF {
         writeUnits(pdf, f, "Troops", units, "Troops");
         writeUnits(pdf, f, "Exotic", units, "Exotic");
         writeUnits(pdf, f, "Scout", units, "Scout");
-        writeUnits(pdf, f, "Auxiliary & Transports", units, "Auxiliary", "Airstrike", "Transport");
+        writeUnits(pdf, f, "Auxiliary & Transports", units, "Auxiliary", "Airstrike", "Transport", "Gate", "Drill");
         writeUnits(pdf, f, "Extras", units, "Extras");
     }
 
@@ -171,6 +183,25 @@ public class DropPDF {
         }
 
         pdf.getDocument().newPage();
+    }
+
+    private ArrayList<Unit> getUnits(Unit[] units, String... category) {
+        HashSet<String> categories = new HashSet<>();
+        for (String c : category) {
+            categories.add(c.toUpperCase());
+        }
+        ArrayList<Unit> list = new ArrayList<>();
+        for (Unit u : units) {
+            if (categories.contains(u.Category.toUpperCase().trim())) {
+                list.add(u);
+            }
+        }
+        list.sort(this::compareUnits);
+        return list;
+    }
+
+    private int compareUnits(Unit u1, Unit u2) {
+        return u1.Name.compareTo(u2.Name);
     }
 
     private void writeUnit(PdfMaker pdf, Faction f, Unit u) throws Exception {
@@ -274,11 +305,11 @@ public class DropPDF {
         titleCell(pdf, topTable, "Special");
 
         dataCell(pdf, topTable, u.getMove());
-        dataCell(pdf, topTable, u.getCounterMeasures());
+        dataCell(pdf, topTable, formatSpecial(u.CounterMeasures, "-", ","));
         dataCell(pdf, topTable, u.getArmour());
         dataCell(pdf, topTable, u.getDamagePoints());
         dataCell(pdf, topTable, u.Type);
-        dataCell(pdf, topTable, u.getSpecial());
+        dataCell(pdf, topTable, formatSpecial(u.Special, "-", ", "));
 
         block.add(topTable.build());
 
@@ -315,7 +346,7 @@ public class DropPDF {
                 dataCell(pdf, weaponsTable, w.getShots());
                 dataCell(pdf, weaponsTable, w.getAccuracy());
                 dataCell(pdf, weaponsTable, w.getEnergy());
-                dataCell(pdf, weaponsTable, w.getSpecial());
+                dataCell(pdf, weaponsTable, formatSpecial(w.Special, "-", ", "));
             }
 
             block.add(weaponsTable.build());
@@ -323,6 +354,273 @@ public class DropPDF {
 
         if (u.ExtraRules != null && u.ExtraRules.length > 0) {
             for (String er : u.ExtraRules) {
+                String title = null;
+                String rule = er;
+                int index = er.indexOf(":");
+                if (index != -1) {
+                    title = er.substring(0, index).trim();
+                    rule = er.substring(index + 1).trim();
+                    try {
+                        Integer.parseInt(title);
+                        title = null;
+                        rule = er;
+                    } catch (NumberFormatException ex) {
+
+                    }
+                }
+                if (title != null) {
+                    block.add(pdf.newPara()
+                            .add(title, ruleTitleFont)
+                            .build());
+                }
+                block.add(pdf.newPara()
+                        .add(rule, ruleFont)
+                        .hAlign(HAlign.JUSTIFIED)
+                        .build());
+            }
+        }
+
+        block.buildAndAdd();
+    }
+
+    private void writeDFC(PdfMaker pdf, Faction f) throws Exception {
+        fd = FactionData.valueOf(f.Name);
+        ss = pdf.getBaseFont("/Squarish Sans CT Regular SC.ttf");
+        lsr = pdf.getBaseFont("/LiberationSerif-Regular.ttf");
+        lsi = pdf.getBaseFont("/LiberationSerif-Italic.ttf");
+        titleFont = pdf.getFont(ss, 60, Color.BLACK);
+        loreFont = pdf.getFont(lsi, 12, Color.BLACK);
+        gamePlayFont = pdf.getFont(lsr, 12, Color.BLACK);
+        revFont = pdf.getFont(lsr, 8, Color.BLACK);
+        categoryFont = pdf.getFont(ss, 14, fd.getTextColor());
+        shipNameFont = pdf.getFont(ss, 14, Color.BLACK);
+        shipDesignationFont = pdf.getFont(ss, 12, Color.BLACK);
+        shipPtsFont = pdf.getFont(ss, 14, fd.getTextColor());
+        unitLabelFont = pdf.getFont(ss, 8, Color.WHITE);
+        unitFont = pdf.getFont(ss, 8, Color.BLACK);
+        ruleTitleFont = pdf.getFont(ss, 12, Color.BLACK);
+        ruleFont = pdf.getFont(lsr, 9, Color.BLACK);
+
+        File factionLogoFile = downloader.download(Resource.getAnyURL(f.Imageurl), "%s.%s", f.Name, Resource.getExtension(f.Imageurl));
+
+        pdf.newBlock()
+                .add(pdf.newImage()
+                        .source(factionLogoFile)
+                        .scaleToFit(mmToPt(30f), mmToPt(30f))
+                        .hAlign(HAlign.CENTER)
+                        .build())
+                .add(pdf.newPara()
+                        .add(f.Name, titleFont)
+                        .hAlign(HAlign.CENTER)
+                        .build())
+                .add(pdf.newPara()
+                        .add(f.Lore, loreFont)
+                        .hAlign(HAlign.JUSTIFIED)
+                        .hyphenation(true)
+                        .build())
+                .add(pdf.newPara()
+                        .add(f.FleetGamePlay, gamePlayFont)
+                        .hAlign(HAlign.JUSTIFIED)
+                        .hyphenation(true)
+                        .build())
+                .add(pdf.newPara()
+                        .add(revFont, "Revision: %s", f._rev)
+                        .hAlign(HAlign.CENTER)
+                        .build())
+                .paddingTop(mmToPt(2f))
+                .paddingBottom(mmToPt(2f))
+                .blockAlign(VAlign.MIDDLE)
+                .endPage(true)
+                .buildAndAdd();
+
+        Ship[] ships = mapper.readValue(downloader.download(Resource.SHIPS.getURL(f.Name), "%s_ships.json", f.Name), Ship[].class);
+
+        writeShips(pdf, f, "Super Heavy", ships, "S", "S2");
+        writeShips(pdf, f, "Heavy", ships, "H");
+        writeShips(pdf, f, "Medium", ships, "M");
+        writeShips(pdf, f, "Light", ships, "L", "L2");
+    }
+
+    private void writeShips(PdfMaker pdf, Faction f, String title, Ship[] ships, String... tonnage) throws Exception {
+        ArrayList<Ship> list = getShips(ships, tonnage);
+        if (list.isEmpty()) {
+            return;
+        }
+
+        pdf.newTable()
+                .add(pdf.newCell()
+                        .content(title, categoryFont)
+                        .hAlign(HAlign.CENTER)
+                        .vAlign(VAlign.MIDDLE)
+                        .backgroundColor(fd.getColor())
+                        .border(Border.BOX)
+                        .padding(mmToPt(2f))
+                        .build())
+                .spacingAfter(mmToPt(10f))
+                .buildAndAdd();
+
+        for (Ship s : list) {
+            writeShip(pdf, f, s);
+        }
+
+        pdf.getDocument().newPage();
+    }
+
+    private ArrayList<Ship> getShips(Ship[] ships, String... tonnage) {
+        HashSet<String> tonnages = new HashSet<>();
+        for (String t : tonnage) {
+            tonnages.add(t.toUpperCase());
+        }
+        ArrayList<Ship> list = new ArrayList<>();
+        for (Ship s : ships) {
+            if (tonnages.contains(s.Tonnage.toUpperCase().trim())) {
+                list.add(s);
+            }
+        }
+        list.sort(this::compareShips);
+        return list;
+    }
+
+    private int compareShips(Ship s1, Ship s2) {
+        int result = -Integer.compare(s1.TonnageClass, s2.TonnageClass);
+        if (result == 0) {
+            result = s1.Name.compareTo(s2.Name);
+        }
+        return result;
+    }
+
+    private void writeShip(PdfMaker pdf, Faction f, Ship s) throws Exception {
+        File shipPhotoFile = downloader.download(Resource.SHIP_PHOTOS.getURL(f.Name, s.Name), "%s_%s.jpg", f.Name, s.Name);
+
+        BlockBuilder block = pdf.newBlock()
+                .paddingTop(mmToPt(2f))
+                .paddingBottom(mmToPt(2f))
+                .keepTogether(true)
+                .spacingAfter(mmToPt(10f));
+
+        TableBuilder nameTable = pdf.newTable()
+                .numColumns(3)
+                .keepTogether(true)
+                .relativeWidths(4.5f, 8.5f, 4.5f);
+
+        nameTable.add(pdf.newCell()
+                .content(String.format("%s %s", s.Faction, s.Name), shipNameFont)
+                .colspan(3)
+                .hAlign(HAlign.CENTER)
+                .vAlign(VAlign.MIDDLE)
+                .border(Border.BOTTOM)
+                .padding(mmToPt(2f))
+                .build());
+
+        nameTable.add(pdf.newCell()
+                .content("", shipDesignationFont)
+                .hAlign(HAlign.CENTER)
+                .vAlign(VAlign.MIDDLE)
+                .border(Border.TOP)
+                .padding(mmToPt(2f))
+                .build());
+
+        nameTable.add(pdf.newCell()
+                .content(s.Designation, shipDesignationFont)
+                .hAlign(HAlign.CENTER)
+                .vAlign(VAlign.MIDDLE)
+                .border(Border.TOP)
+                .padding(mmToPt(2f))
+                .build());
+
+        nameTable.add(pdf.newCell()
+                .content(String.format("%d pts", s.Points), shipPtsFont)
+                .backgroundColor(fd.getColor())
+                .hAlign(HAlign.CENTER)
+                .vAlign(VAlign.MIDDLE)
+                .border(Border.BOX)
+                .padding(mmToPt(2f))
+                .build());
+
+        block.add(nameTable.build());
+
+        block.add(pdf.newImage()
+                .source(shipPhotoFile)
+                .scaleToFit(mmToPt(175f), mmToPt(60f))
+                .hAlign(HAlign.CENTER)
+                .build());
+
+        TableBuilder statTable = pdf.newTable()
+                .numColumns(10)
+                .keepTogether(true)
+                .relativeWidths(34f, 11.5f, 10.5f, 15f, 15.5f, 16.5f, 15f, 11.9f, 37f);
+
+        titleCell(pdf, statTable, "Name");
+        titleCell(pdf, statTable, "Scan");
+        titleCell(pdf, statTable, "Sig");
+        titleCell(pdf, statTable, "Thrust");
+        titleCell(pdf, statTable, "Hull");
+        titleCell(pdf, statTable, "A");
+        titleCell(pdf, statTable, "PD");
+        titleCell(pdf, statTable, "G");
+        titleCell(pdf, statTable, "T");
+        titleCell(pdf, statTable, "Special");
+
+        dataCell(pdf, statTable, s.Name);
+        dataCell(pdf, statTable, s.Scan);
+        dataCell(pdf, statTable, s.Signal);
+        dataCell(pdf, statTable, s.Thrust);
+        dataCell(pdf, statTable, s.Hull);
+        dataCell(pdf, statTable, s.Armour);
+        dataCell(pdf, statTable, s.PointDefence);
+        dataCell(pdf, statTable, s.getGroup());
+        dataCell(pdf, statTable, s.Tonnage);
+        dataCell(pdf, statTable, formatSpecial(s.Special, "-", ", "));
+
+        block.add(statTable.build());
+
+        if (s.Weapons != null && s.Weapons.length > 0) {
+            TableBuilder weaponTable = pdf.newTable()
+                    .numColumns(6)
+                    .keepTogether(true)
+                    .relativeWidths(56f, 15f, 15.5f, 16.5f, 15f, 57f);
+
+            titleCell(pdf, weaponTable, "Type");
+            titleCell(pdf, weaponTable, "Lock");
+            titleCell(pdf, weaponTable, "Attack");
+            titleCell(pdf, weaponTable, "Damage");
+            titleCell(pdf, weaponTable, "Arc");
+            titleCell(pdf, weaponTable, "Special");
+
+            for (ShipWeapon w : s.Weapons) {
+                dataCell(pdf, weaponTable, w.Name);
+                dataCell(pdf, weaponTable, w.LockValue);
+                dataCell(pdf, weaponTable, w.Attack);
+                dataCell(pdf, weaponTable, w.Damage);
+                dataCell(pdf, weaponTable, w.Arc);
+                dataCell(pdf, weaponTable, formatSpecial(w.Special, "-", ", "));
+            }
+
+            block.add(weaponTable.build());
+        }
+
+        if (s.LaunchAssets != null && s.LaunchAssets.length > 0) {
+            TableBuilder launchTable = pdf.newTable()
+                    .totalWidth(0.6f * pdf.getContentWidth())
+                    .numColumns(3)
+                    .keepTogether(true)
+                    .relativeWidths(56f, 23f, 24f);
+
+            titleCell(pdf, launchTable, "Load");
+            titleCell(pdf, launchTable, "Launch");
+            titleCell(pdf, launchTable, "Special");
+
+            for (LaunchAsset la : s.LaunchAssets) {
+                dataCell(pdf, launchTable, la.Name);
+                dataCell(pdf, launchTable, la.Launch);
+                dataCell(pdf, launchTable, formatSpecial(la.Special, "-", ", "));
+            }
+
+            block.add(launchTable.build());
+        }
+
+        if (s.SpecRules != null && s.SpecRules.length > 0) {
+            for (String er : s.SpecRules) {
                 String title = null;
                 String rule = er;
                 int index = er.indexOf(":");
@@ -384,23 +682,18 @@ public class DropPDF {
                 .build());
     }
 
-    private ArrayList<Unit> getUnits(Unit[] units, String... category) {
-        HashSet<String> categories = new HashSet<>();
-        for (String c : category) {
-            categories.add(c);
-        }
-        ArrayList<Unit> list = new ArrayList<>();
-        for (Unit u : units) {
-            if (categories.contains(u.Category)) {
-                list.add(u);
+    private String formatSpecial(String[] data, String none, String separator) {
+        if (data == null || data.length == 0) {
+            return none;
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for (String d : data) {
+                sb.append(d.trim());
+                sb.append(separator);
             }
+            sb.setLength(sb.length() - separator.length());
+            return sb.toString();
         }
-        list.sort(this::compareUnits);
-        return list;
-    }
-
-    private int compareUnits(Unit u1, Unit u2) {
-        return u1.Name.compareTo(u2.Name);
     }
 
     public static void main(String[] args) {
