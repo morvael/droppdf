@@ -85,15 +85,15 @@ public class DropPDF {
             try (PdfMaker pdf = new PdfMaker(downloader.getFile("DZC_%s_A4.pdf", f.Name), PageSize.A4)) {
                 writeDZC(pdf, f);
             }
-            try (PdfMaker pdf = new PdfMaker(downloader.getFile("DZC_%s_Letter.pdf", f.Name), PageSize.LETTER)) {
-                writeDZC(pdf, f);
-            }
+//            try (PdfMaker pdf = new PdfMaker(downloader.getFile("DZC_%s_Letter.pdf", f.Name), PageSize.LETTER)) {
+//                writeDZC(pdf, f);
+//            }
             try (PdfMaker pdf = new PdfMaker(downloader.getFile("DFC_%s_A4.pdf", f.Name), PageSize.A4)) {
                 writeDFC(pdf, f);
             }
-            try (PdfMaker pdf = new PdfMaker(downloader.getFile("DFC_%s_Letter.pdf", f.Name), PageSize.LETTER)) {
-                writeDFC(pdf, f);
-            }
+//            try (PdfMaker pdf = new PdfMaker(downloader.getFile("DFC_%s_Letter.pdf", f.Name), PageSize.LETTER)) {
+//                writeDFC(pdf, f);
+//            }
         }
     }
 

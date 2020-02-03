@@ -56,7 +56,9 @@ public class Ship {
     }
 
     public String getHardPoints() {
-        if (HardPoints > 0) {
+        if ("Resistance".equals(Faction) == false) {
+            return null;
+        } else if (HardPoints > 0) {
             String systemsClass = Tonnage.startsWith("L") ? "Frigate" : "Cruiser";
             if (MinHardPoints == 0) {
                 return String.format("This ship may choose to take up to %d option%s from the %s Systems list.", HardPoints, HardPoints > 1 ? "s" : "", systemsClass);
