@@ -48,7 +48,7 @@ import pl.derwinski.pdf.VAlign;
  */
 public class DropPDF {
 
-    private static final DownloadMode DOWNLOAD_MODE = DownloadMode.MISSING;
+    private static final DownloadMode DOWNLOAD_MODE = DownloadMode.JSON;
 
     private final Downloader downloader;
     private final JsonMapper mapper;
@@ -512,13 +512,39 @@ public class DropPDF {
                 .padding(mmToPt(2f))
                 .build());
 
-        nameTable.add(pdf.newCell()
-                .content("", shipDesignationFont)
-                .hAlign(HAlign.CENTER)
-                .vAlign(VAlign.MIDDLE)
-                .border(Border.TOP)
-                .padding(mmToPt(2f))
-                .build());
+        if (s.icons != null && s.icons.length > 0) {
+            TableBuilder iconsTable = pdf.newTable()
+                    .numColumns(s.icons.length)
+                    .totalWidth(mmToPt(12f * (float) s.icons.length))
+                    .keepTogether(true);
+            for (String icon : s.icons) {
+                File shipIconFile = downloader.download(Resource.SHIP_ICONS.getURL(icon), "ShipIcon_%s.png", icon);
+                iconsTable
+                        .add(pdf.newCell()
+                                .content(pdf.newImage()
+                                        .source(shipIconFile)
+                                        .scaleToFit(mmToPt(10f), mmToPt(10f))
+                                        .build())
+                                .hAlign(HAlign.CENTER)
+                                .vAlign(VAlign.MIDDLE)
+                                .paddingLeft(2f)
+                                .build());
+
+            }
+            nameTable.add(pdf.newCell()
+                    .content(iconsTable.build())
+                    .vAlign(VAlign.MIDDLE)
+                    .border(Border.TOP)
+                    .padding(mmToPt(2f))
+                    .build());
+        } else {
+            nameTable.add(pdf.newCell()
+                    .content("", shipDesignationFont)
+                    .vAlign(VAlign.MIDDLE)
+                    .border(Border.TOP)
+                    .padding(mmToPt(2f))
+                    .build());
+        }
 
         nameTable.add(pdf.newCell()
                 .content(s.Designation, shipDesignationFont)
