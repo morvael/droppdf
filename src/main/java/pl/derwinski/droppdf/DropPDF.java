@@ -574,7 +574,7 @@ public class DropPDF {
         TableBuilder statTable = pdf.newTable()
                 .numColumns(10)
                 .keepTogether(true)
-                .relativeWidths(34f, 11.5f, 10.5f, 15f, 15.5f, 16.5f, 15f, 11.9f, 37f);
+                .relativeWidths(34f, 11.5f, 11.5f, 15f, 15.5f, 16.5f, 15f, 11f, 9f, 36f);
 
         titleCell(pdf, statTable, "Name");
         titleCell(pdf, statTable, "Scan");
@@ -643,6 +643,24 @@ public class DropPDF {
             }
 
             block.add(launchTable.build());
+        }
+
+        String hardPoints = s.getHardPoints();
+        if (hardPoints != null) {
+            block.add(pdf
+                    .newTable()
+                    .keepTogether(true)
+                    .add(pdf
+                            .newCell()
+                            .content(pdf
+                                    .newPara()
+                                    .add("Hardpoints: ", ruleTitleFont)
+                                    .add(hardPoints, ruleFont)
+                                    .build())
+                            .border(Border.BOX)
+                            .padding(mmToPt(2f))
+                            .build())
+                    .build());
         }
 
         if (s.SpecRules != null && s.SpecRules.length > 0) {
