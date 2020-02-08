@@ -339,7 +339,7 @@ public class DropPDF {
                 }
 
                 dataCell(pdf, weaponsTable, w.Name);
-                dataCell(pdf, weaponsTable, w.MoveFire);
+                dataCell(pdf, weaponsTable, w.MoveFire == null ? "-" : w.MoveFire);
                 dataCell(pdf, weaponsTable, w.Arc);
                 dataCell(pdf, weaponsTable, w.RangeFull);
                 dataCell(pdf, weaponsTable, w.RangeCountered);
@@ -547,7 +547,7 @@ public class DropPDF {
         }
 
         nameTable.add(pdf.newCell()
-                .content(s.Designation, shipDesignationFont)
+                .content(s.Designation == null ? "" : s.Designation, shipDesignationFont)
                 .hAlign(HAlign.CENTER)
                 .vAlign(VAlign.MIDDLE)
                 .border(Border.TOP)
@@ -718,7 +718,7 @@ public class DropPDF {
 
     private void dataCell(PdfMaker pdf, TableBuilder table, String text) {
         table.add(pdf.newCell()
-                .content(text, unitFont)
+                .content(text == null ? "" : text, unitFont)
                 .hAlign(HAlign.CENTER)
                 .vAlign(VAlign.MIDDLE)
                 .border(Border.BOX)
