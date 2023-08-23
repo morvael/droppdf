@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Dominik Derwiński
+ * Copyright (C) 2023 morvael
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,12 @@ package pl.derwinski.droppdf.json;
  *
  * @author Dominik Derwiński
  */
-public class ShipWeapon {
+public class Transport {
 
-    public String Name;
-    public String LockValue;
-    public String Attack;
-    public String Damage;
-    public String Arc;
-    public String[] Special;
-    public String FullString;
+    public String faction;
+    public int number;
+    public String transportClass;
+    public String transportIcon;
+    public String transportUnit;
+
 }

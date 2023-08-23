@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 domin
+ * Copyright (C) 2020 Dominik Derwiński
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -92,15 +93,28 @@ public class PdfMaker implements AutoCloseable {
     }
 
     public Image getImage(File image) throws Exception {
-        String key = image.getAbsolutePath();
-        Image existingImage = images.get(key);
-        if (existingImage == null) {
-            BufferedImage bi = ImageIO.read(image);
-            Image newImage = Image.getInstance(bi, null);
-            images.put(key, newImage);
-            return newImage;
-        } else {
-            return Image.getInstance(existingImage);
+        try {
+            String key = image.getAbsolutePath();
+            Image existingImage = images.get(key);
+            if (existingImage == null) {
+                BufferedImage bi = ImageIO.read(image);
+                if (bi == null) {
+                    System.out.println(String.format("Using blank for %s", image.getName()));
+                    bi = new BufferedImage(500, 500, BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D g2 = bi.createGraphics();
+                    g2.setColor(Color.WHITE);
+                    g2.fillRect(0, 0, 500, 500);
+                    g2.dispose();
+                    ImageIO.write(bi, "png", image);
+                }
+                Image newImage = Image.getInstance(bi, null);
+                images.put(key, newImage);
+                return newImage;
+            } else {
+                return Image.getInstance(existingImage);
+            }
+        } catch (Exception ex) {
+            throw new Exception(String.format("Problem with file %s", image.getName()), ex);
         }
     }
 

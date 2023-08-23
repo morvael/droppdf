@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 domin
+ * Copyright (C) 2020 Dominik Derwiński
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,33 +22,32 @@ package pl.derwinski.droppdf.json;
  */
 public class Weapon {
 
-    public String Name;
-    public int Energy;
-    public int Shots;
-    public int Accuracy;
-    public String RangeFull;
-    public String RangeCountered;
-    public String MoveFire;
-    public String Arc;
-    public boolean Optional;
-    public int OptionalCost;
-    public String[] Special;
-    public String FullString;
+    public String[] special;
+    public boolean optional;
+    public String[] replaces;
+    public boolean replaced;
+    public boolean optionalUsed;
+    public int amount;
+    public String name;
+    public String mf;
+    public String arc;
+    public String rangeFull;
+    public String rangeCountered;
+    public String shots;
+    public String acc;
+    public String energy;
+    public Integer cost;
 
     public String getShots() {
-        return String.format("%d", Shots);
+        return shots;
     }
 
     public String getAccuracy() {
-        if (Accuracy > 0) {
-            return String.format("%d+", Accuracy);
-        } else {
-            return "-";
-        }
+        return acc;
     }
 
     public String getEnergy() {
-        return String.format("%d", Energy);
+        return energy;
     }
 
 }

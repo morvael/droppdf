@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 domin
+ * Copyright (C) 2020 Dominik Derwiński
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,47 +24,48 @@ public class Unit {
 
     public String _id;
     public String _rev;
-    public String Id;
-    public String Name;
-    public int Armour;
-    public int Move;
-    public String[] CounterMeasures;
-    public int DamagePoints;
-    public int Points;
-    public String Type;
-    public String Category;
-    public String[] TransportOptions;
-    public String[] ExtraRules;
-    public String[] Special;
-    public Weapon[] Weapons;
-    public String Faction;
-    public int MinSquadSize;
-    public int MaxSquadSize;
-    public int Move2;
-    public boolean AlternateMove;
-    public BehemothStats BehemothStats;
+    public Transport[] transport;
+    public String[] special;
+    public String[] uniqueRules;
+    public Weapon[] weapons;
+    public Weapon[] optionalWeapons;
+    public boolean commandCentre;
+    public boolean behemoth;
+    public BehemothStats behemothStats;
+    public boolean hasExtraUnit;
+    public boolean released;
+    public ExtraPhoto[] extraPhotos;
+    public String category;
+    public String name;
+    public String faction;
+    public int points;
+    public String move;
+    public String countermeasures;
+    public int armour;
+    public int damage;
+    public String type;
+    public int minSquadSize;
+    public int maxSquadSize;
+    public int commandCentreCost;
+    public String extraUnit;
 
     public String getMove() {
-        if (Move2 > 0) {
-            return String.format("%d\"-%d\"", Move, Move2);
-        } else {
-            return String.format("%d\"", Move);
-        }
+        return move;
     }
 
     public String getArmour() {
-        return String.format("%d", Armour);
+        return String.format("%d", armour);
     }
 
     public String getDamagePoints() {
-        return String.format("%d", DamagePoints);
+        return String.format("%d", damage);
     }
 
     public String getSquadSize() {
-        if (MaxSquadSize > MinSquadSize) {
-            return String.format("Squad Size: %d - %d", MinSquadSize, MaxSquadSize);
+        if (maxSquadSize > minSquadSize) {
+            return String.format("Squad Size: %d - %d", minSquadSize, maxSquadSize);
         } else {
-            return String.format("Squad Size: %d", MinSquadSize);
+            return String.format("Squad Size: %d", minSquadSize);
         }
     }
 

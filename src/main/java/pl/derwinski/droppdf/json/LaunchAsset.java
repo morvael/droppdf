@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 domin
+ * Copyright (C) 2020 Dominik Derwiński
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
  */
 package pl.derwinski.droppdf.json;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 /**
  *
  * @author Dominik Derwiński
@@ -24,6 +26,7 @@ public class LaunchAsset {
 
     public String Name;
     public String Launch;
+    @JsonDeserialize(converter = LaunchAssetSpecialConverter.class)
     public String[] Special;
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 domin
+ * Copyright (C) 2020 Dominik Derwiński
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,11 @@
  */
 package pl.derwinski.droppdf;
 
+import java.io.File;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.httpclient.util.URIUtil;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -25,11 +28,12 @@ import org.apache.commons.httpclient.util.URIUtil;
  */
 public enum Resource {
 
-    FACTIONS("https://thetrolltrader.com:3001/factions/"),
-    UNITS("https://thetrolltrader.com:3001/units/%s"),
-    UNIT_PHOTOS("https://www.dropzonecommander.com/builder/assets/images/unitphotos/%s/%s.jpg"),
-    TRANSPORT_ICONS("https://www.dropzonecommander.com/builder/assets/images/transporticons/%s"),
-    SHIPS("https://thetrolltrader.com:3001/ships/%s"),
+    FACTIONS("https://dropzonecommander.com:3001/factions/"),
+    FACTIONSV2("https://dropzonecommander.com:3001/factionsv2/"),
+    UNITS("https://dropzonecommander.com:3001/unitsv22/%s"),
+    UNIT_PHOTOS("https://www.dropzonecommander.com/assets/images/unitphotos/%s/%s.png"),
+    TRANSPORT_ICONS("https://www.dropzonecommander.com/assets/images/transporticons/%s/%s"),
+    SHIPS("https://dropzonecommander.com:3001/ships/%s"),
     SHIP_PHOTOS("https://dropfleetcommander.com/assets/images/shipphotos/%s/%s.png"),
     SHIP_ICONS("https://dropfleetcommander.com/assets/images/ShipIcons/%s.png");
 
@@ -63,6 +67,16 @@ public enum Resource {
         } else {
             return "";
         }
+    }
+
+    public File fixJSON(File file) throws Exception {
+        if (this == SHIPS) {
+            String s = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+            s = s.replace("\"Weapons\":[\"-\"]", "\"Weapons\":[]");
+            s = s.replace("\"LaunchAssets\":[\"-\"]", "\"LaunchAssets\":[]");
+            FileUtils.writeStringToFile(file, s, StandardCharsets.UTF_8);
+        }
+        return file;
     }
 
 }

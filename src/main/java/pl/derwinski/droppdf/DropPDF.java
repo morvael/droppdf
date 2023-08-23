@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 domin
+ * Copyright (C) 2020 Dominik Derwiński
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  */
 package pl.derwinski.droppdf;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.lowagie.text.Font;
 import com.lowagie.text.PageSize;
@@ -30,6 +31,7 @@ import pl.derwinski.droppdf.json.Faction;
 import pl.derwinski.droppdf.json.LaunchAsset;
 import pl.derwinski.droppdf.json.Ship;
 import pl.derwinski.droppdf.json.ShipWeapon;
+import pl.derwinski.droppdf.json.Transport;
 import pl.derwinski.droppdf.json.Unit;
 import pl.derwinski.droppdf.json.Weapon;
 import pl.derwinski.pdf.BlockBuilder;
@@ -75,11 +77,14 @@ public class DropPDF {
 
     public DropPDF() throws Exception {
         downloader = new Downloader(new File("."), DOWNLOAD_MODE);
-        mapper = new JsonMapper();
+        mapper = JsonMapper.builder()
+                .configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
+                .build();
     }
 
     public void run() throws Exception {
         Faction[] factions = mapper.readValue(downloader.download(Resource.FACTIONS.getURL(), "factions.json"), Faction[].class);
+        //FactionV2[] factionsv2 = mapper.readValue(downloader.download(Resource.FACTIONSV2.getURL(), "factionsv2.json"), FactionV2[].class);
         for (Faction f : factions) {
             fd = FactionData.valueOf(f.Name);
             try (PdfMaker pdf = new PdfMaker(downloader.getFile("DZC_%s_A4.pdf", f.Name), PageSize.A4)) {
@@ -192,7 +197,7 @@ public class DropPDF {
         }
         ArrayList<Unit> list = new ArrayList<>();
         for (Unit u : units) {
-            if (categories.contains(u.Category.toUpperCase().trim())) {
+            if (categories.contains(u.category.toUpperCase().trim())) {
                 list.add(u);
             }
         }
@@ -201,11 +206,11 @@ public class DropPDF {
     }
 
     private int compareUnits(Unit u1, Unit u2) {
-        return u1.Name.compareTo(u2.Name);
+        return u1.name.compareTo(u2.name);
     }
 
     private void writeUnit(PdfMaker pdf, Faction f, Unit u) throws Exception {
-        File unitPhotoFile = downloader.download(Resource.UNIT_PHOTOS.getURL(f.Name, u.Name), "%s_%s.jpg", f.Name, u.Name);
+        File unitPhotoFile = downloader.download(Resource.UNIT_PHOTOS.getURL(f.Name, u.name), "%s_%s.png", f.Name, u.name);
 
         BlockBuilder block = pdf.newBlock()
                 .paddingTop(mmToPt(2f))
@@ -232,7 +237,7 @@ public class DropPDF {
                 .build());
 
         topTable.add(pdf.newCell()
-                .content(u.Name, unitNameFont)
+                .content(u.name, unitNameFont)
                 .hAlign(HAlign.CENTER)
                 .vAlign(VAlign.MIDDLE)
                 .border(Border.BOX)
@@ -243,23 +248,23 @@ public class DropPDF {
                 .build());
 
         topTable.add(pdf.newCell()
-                .content(unitFont, "%d pts", u.Points)
+                .content(unitFont, "%d pts", u.points)
                 .hAlign(HAlign.CENTER)
                 .vAlign(VAlign.MIDDLE)
                 .border(Border.BOX)
                 .padding(2f)
                 .build());
 
-        if (u.TransportOptions != null && u.TransportOptions.length > 0) {
+        if (u.transport != null && u.transport.length > 0) {
             TableBuilder transportTable = pdf.newTable()
-                    .numColumns(2 * u.TransportOptions.length)
-                    .totalWidth(mmToPt(20f * (float) u.TransportOptions.length))
+                    .numColumns(2 * u.transport.length)
+                    .totalWidth(mmToPt(20f * (float) u.transport.length))
                     .keepTogether(true)
                     .hAlign(HAlign.RIGHT)
                     .relativeWidths(3f, 2f);
-            for (String to : u.TransportOptions) {
-                String transportIconName = fd.getImage(to.charAt(0));
-                File transportIconFile = downloader.download(Resource.TRANSPORT_ICONS.getURL(transportIconName), transportIconName);
+            for (Transport to : u.transport) {
+                String transportIconName = to.transportIcon.substring(to.transportIcon.lastIndexOf("/") + 1);
+                File transportIconFile = downloader.download(Resource.TRANSPORT_ICONS.getURL(f.Name, transportIconName), String.format("%s_%s", f.Name, transportIconName));
                 transportTable
                         .add(pdf.newCell()
                                 .content(pdf.newImage()
@@ -271,7 +276,7 @@ public class DropPDF {
                                 .paddingLeft(2f)
                                 .build())
                         .add(pdf.newCell()
-                                .content(to.substring(1), transportFont)
+                                .content(String.format("%d", to.number), transportFont)
                                 .hAlign(HAlign.LEFT)
                                 .vAlign(VAlign.TOP)
                                 .paddingLeft(2f)
@@ -298,18 +303,18 @@ public class DropPDF {
         }
 
         titleCell(pdf, topTable, "Move");
-        titleCell(pdf, topTable, "Counter", "Measures");
+        titleCell(pdf, topTable, "CM");
         titleCell(pdf, topTable, "Armour");
-        titleCell(pdf, topTable, "Damage", "Points");
+        titleCell(pdf, topTable, "Damage");
         titleCell(pdf, topTable, "Type");
         titleCell(pdf, topTable, "Special");
 
         dataCell(pdf, topTable, u.getMove());
-        dataCell(pdf, topTable, formatSpecial(u.CounterMeasures, "-", ","));
+        dataCell(pdf, topTable, u.countermeasures);
         dataCell(pdf, topTable, u.getArmour());
         dataCell(pdf, topTable, u.getDamagePoints());
-        dataCell(pdf, topTable, u.Type);
-        dataCell(pdf, topTable, formatSpecial(u.Special, "-", ", "));
+        dataCell(pdf, topTable, u.type);
+        dataCell(pdf, topTable, formatSpecial(u.special, "-", ", "));
 
         block.add(topTable.build());
 
@@ -317,7 +322,7 @@ public class DropPDF {
                 .add(u.getSquadSize(), squadSizeFont)
                 .build());
 
-        if (u.Weapons != null && u.Weapons.length > 0) {
+        if (u.weapons != null && u.weapons.length > 0) {
             TableBuilder weaponsTable = pdf.newTable()
                     .numColumns(9)
                     .keepTogether(true)
@@ -325,35 +330,31 @@ public class DropPDF {
 
             weaponsTable.add(pdf.newCell().content("", unitFont).build());
             titleCell(pdf, weaponsTable, "M&F");
-            titleCell(pdf, weaponsTable, "Arc");
+            titleCell(pdf, weaponsTable, "ARC");
             titleCell(pdf, weaponsTable, "R(F)");
             titleCell(pdf, weaponsTable, "R(C)");
-            titleCell(pdf, weaponsTable, "Shots");
-            titleCell(pdf, weaponsTable, "Acc");
+            titleCell(pdf, weaponsTable, "SHO");
+            titleCell(pdf, weaponsTable, "ACC");
             titleCell(pdf, weaponsTable, "E");
             titleCell(pdf, weaponsTable, "Special");
 
-            for (Weapon w : u.Weapons) {
-                if (w.Shots == 0) {
-                    continue;
-                }
-
-                dataCell(pdf, weaponsTable, w.Name);
-                dataCell(pdf, weaponsTable, w.MoveFire == null ? "-" : w.MoveFire);
-                dataCell(pdf, weaponsTable, w.Arc);
-                dataCell(pdf, weaponsTable, w.RangeFull);
-                dataCell(pdf, weaponsTable, w.RangeCountered);
+            for (Weapon w : u.weapons) {
+                dataCell(pdf, weaponsTable, w.name);
+                dataCell(pdf, weaponsTable, w.mf == null ? "-" : w.mf);
+                dataCell(pdf, weaponsTable, w.arc);
+                dataCell(pdf, weaponsTable, w.rangeFull);
+                dataCell(pdf, weaponsTable, w.rangeCountered);
                 dataCell(pdf, weaponsTable, w.getShots());
                 dataCell(pdf, weaponsTable, w.getAccuracy());
                 dataCell(pdf, weaponsTable, w.getEnergy());
-                dataCell(pdf, weaponsTable, formatSpecial(w.Special, "-", ", "));
+                dataCell(pdf, weaponsTable, formatSpecial(w.special, "-", ", "));
             }
 
             block.add(weaponsTable.build());
         }
 
-        if (u.ExtraRules != null && u.ExtraRules.length > 0) {
-            for (String er : u.ExtraRules) {
+        if (u.uniqueRules != null && u.uniqueRules.length > 0) {
+            for (String er : u.uniqueRules) {
                 String title = null;
                 String rule = er;
                 int index = er.indexOf(":");
@@ -361,7 +362,7 @@ public class DropPDF {
                     title = er.substring(0, index).trim();
                     rule = er.substring(index + 1).trim();
                     try {
-                        Integer.parseInt(title);
+                        Integer.valueOf(title);
                         title = null;
                         rule = er;
                     } catch (NumberFormatException ex) {
@@ -433,7 +434,7 @@ public class DropPDF {
                 .endPage(true)
                 .buildAndAdd();
 
-        Ship[] ships = mapper.readValue(downloader.download(Resource.SHIPS.getURL(f.Name), "%s_ships.json", f.Name), Ship[].class);
+        Ship[] ships = mapper.readValue(Resource.SHIPS.fixJSON(downloader.download(Resource.SHIPS.getURL(f.Name), "%s_ships.json", f.Name)), Ship[].class);
 
         writeShips(pdf, f, "Super Heavy", ships, "S", "S2");
         writeShips(pdf, f, "Heavy", ships, "H");
@@ -490,7 +491,7 @@ public class DropPDF {
     }
 
     private void writeShip(PdfMaker pdf, Faction f, Ship s) throws Exception {
-        File shipPhotoFile = downloader.download(Resource.SHIP_PHOTOS.getURL(f.Name, s.Name), "%s_%s.jpg", f.Name, s.Name);
+        File shipPhotoFile = downloader.download(Resource.SHIP_PHOTOS.getURL(f.Name, s.Name), "%s_%s.png", f.Name, s.Name);
 
         BlockBuilder block = pdf.newBlock()
                 .paddingTop(mmToPt(2f))
@@ -512,39 +513,12 @@ public class DropPDF {
                 .padding(mmToPt(2f))
                 .build());
 
-        if (s.icons != null && s.icons.length > 0) {
-            TableBuilder iconsTable = pdf.newTable()
-                    .numColumns(s.icons.length)
-                    .totalWidth(mmToPt(12f * (float) s.icons.length))
-                    .keepTogether(true);
-            for (String icon : s.icons) {
-                File shipIconFile = downloader.download(Resource.SHIP_ICONS.getURL(icon), "ShipIcon_%s.png", icon);
-                iconsTable
-                        .add(pdf.newCell()
-                                .content(pdf.newImage()
-                                        .source(shipIconFile)
-                                        .scaleToFit(mmToPt(10f), mmToPt(10f))
-                                        .build())
-                                .hAlign(HAlign.CENTER)
-                                .vAlign(VAlign.MIDDLE)
-                                .paddingLeft(2f)
-                                .build());
-
-            }
-            nameTable.add(pdf.newCell()
-                    .content(iconsTable.build())
-                    .vAlign(VAlign.MIDDLE)
-                    .border(Border.TOP)
-                    .padding(mmToPt(2f))
-                    .build());
-        } else {
-            nameTable.add(pdf.newCell()
-                    .content("", shipDesignationFont)
-                    .vAlign(VAlign.MIDDLE)
-                    .border(Border.TOP)
-                    .padding(mmToPt(2f))
-                    .build());
-        }
+        nameTable.add(pdf.newCell()
+                .content("", shipDesignationFont)
+                .vAlign(VAlign.MIDDLE)
+                .border(Border.TOP)
+                .padding(mmToPt(2f))
+                .build());
 
         nameTable.add(pdf.newCell()
                 .content(s.Designation == null ? "" : s.Designation, shipDesignationFont)
@@ -574,14 +548,14 @@ public class DropPDF {
         TableBuilder statTable = pdf.newTable()
                 .numColumns(10)
                 .keepTogether(true)
-                .relativeWidths(34f, 11.5f, 11.5f, 15f, 15.5f, 16.5f, 15f, 11f, 9f, 36f);
+                .relativeWidths(34f, 12.5f, 12.5f, 15f, 15.5f, 16.5f, 15f, 11f, 9f, 34f);
 
         titleCell(pdf, statTable, "Name");
         titleCell(pdf, statTable, "Scan");
         titleCell(pdf, statTable, "Sig");
         titleCell(pdf, statTable, "Thrust");
         titleCell(pdf, statTable, "Hull");
-        titleCell(pdf, statTable, "A");
+        titleCell(pdf, statTable, "Armour");
         titleCell(pdf, statTable, "PD");
         titleCell(pdf, statTable, "G");
         titleCell(pdf, statTable, "T");
@@ -608,8 +582,8 @@ public class DropPDF {
 
             titleCell(pdf, weaponTable, "Type");
             titleCell(pdf, weaponTable, "Lock");
-            titleCell(pdf, weaponTable, "Attack");
-            titleCell(pdf, weaponTable, "Damage");
+            titleCell(pdf, weaponTable, "Att");
+            titleCell(pdf, weaponTable, "Dmg");
             titleCell(pdf, weaponTable, "Arc");
             titleCell(pdf, weaponTable, "Special");
 
@@ -672,7 +646,7 @@ public class DropPDF {
                     title = er.substring(0, index).trim();
                     rule = er.substring(index + 1).trim();
                     try {
-                        Integer.parseInt(title);
+                        Integer.valueOf(title);
                         title = null;
                         rule = er;
                     } catch (NumberFormatException ex) {

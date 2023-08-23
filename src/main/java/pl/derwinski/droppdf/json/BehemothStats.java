@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 domin
+ * Copyright (C) 2020 Dominik Derwiński
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,14 +22,14 @@ package pl.derwinski.droppdf.json;
  */
 public class BehemothStats {
 
-    public int HullPoints;
-    public int HullDamagePoints;
-    public String HullEffect;
-    public int LegsPoints;
-    public int LegsDamagePoints;
-    public String LegsEffect;
-    public int WeaponsPoints;
-    public int WeaponsDamagePoints;
-    public String WeaponsEffect;
+    public int hullDamage;
+    public String hullEffect;
+    public int hullPoints;
+    public int legsDamage;
+    public String legsEffect;
+    public int legsPoints;
+    public int weaponsDamage;
+    public String weaponsEffect;
+    public int weaponsPoints;
 
 }

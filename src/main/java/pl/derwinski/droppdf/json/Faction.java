@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 domin
+ * Copyright (C) 2020 Dominik Derwiński
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,5 +29,6 @@ public class Faction {
     public String GamePlay;
     public String FleetGamePlay;
     public String Imageurl;
+    public String role;
 
 }
